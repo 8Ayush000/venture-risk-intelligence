@@ -1,99 +1,103 @@
-# 🚀 Startup Risk Intelligence AI
+# Startup Risk Intelligence AI
 
-An advanced AI-powered system to analyze startups and predict failure risk using financial, market, and social indicators.
+Startup Risk Intelligence AI is a startup failure-risk analysis project. It combines an exploratory data-science workflow with a browser-based dashboard for reviewing financial, operational, and market signals.
 
-This project aims to help investors, founders, and incubators make data-driven decisions.
+## Project Status
 
----
+### Available now
 
-## 📊 Key Features
+- Raw startup dataset with financial and operating indicators
+- Exploratory analysis notebook
+- Saved startup risk model artifact
+- Interactive **Startup Vitals Monitor** frontend
+- Transparent local risk estimator with charts and explanations
 
-- 📈 Startup Failure Prediction (ML Models)
-- ⏳ Time-to-Failure Forecasting
-- 🧠 Explainable AI (SHAP, LIME)
-- 🌐 FastAPI Backend
-- 📊 Interactive Dashboard (Streamlit)
-- 🔍 Multi-Source Data Integration
+### In progress
 
----
+- FastAPI prediction service
+- Connection between the frontend and the saved model
+- Production training and evaluation workflow
 
-## 🛠️ Tech Stack
+## Frontend Dashboard
 
-- Python
-- Pandas, NumPy
-- Scikit-learn, XGBoost
-- NLP (NLTK, Transformers)
-- FastAPI
-- Streamlit
-- SHAP
-- PostgreSQL
+The dashboard accepts startup information and displays:
 
----
-
-## 📁 Project Structure
-Startup-Risk-Intelligence-AI/
-│
-├── data/
-│ ├── raw/
-│ └── processed/
-│
-├── notebooks/
-│ └── 01_eda.ipynb
-│
-├── src/
-│ ├── preprocessing.py
-│ ├── feature_engineering.py
-│ └── train_model.py
-│
-├── models/
-│
-├── api/
-│ └── main.py
-│
-├── dashboard/
-│ └── app.py
-│
-├── reports/
-│
-└── README.md
-
----
-
-## 🖥️ Frontend — Startup Vitals Monitor
-
-A self-contained diagnostics dashboard for exploring failure risk, built as a single HTML file with live charts.
+- Overall risk score and confidence
+- Risk classification: stable, elevated, or critical
+- Weighted factor contributions
+- Health profile radar chart
+- Cash runway projection
+- Comparison with dataset averages
+- Reliability warnings for inputs outside observed dataset ranges
 
 ![Startup Vitals Monitor preview](frontend/assets/vitals-monitor-preview.png)
 
-**Features**
-- Intake form covering the same features used in `data/raw/startup_failure_prediction.csv`
-- Overall risk gauge with a confidence score
-- "Why This Score" breakdown showing each factor's weighted contribution
-- Risk profile radar chart, 24-month cash runway projection, and a benchmark chart vs. the dataset average
-- Reliability check that flags any input outside the ranges seen in training data
+### Run the dashboard
 
-**Run it locally**
+The simplest option is to open [frontend/index.html](frontend/index.html) directly in a browser.
+
+For a local development server, run this command from the repository root:
+
 ```bash
-open frontend/index.html   # or just double-click the file
+python -m http.server 8000 --directory frontend
 ```
 
-Risk scores currently come from a transparent local heuristic (`estimateRisk()` inside `frontend/index.html`), since the FastAPI backend (`api/main.py`) isn't built yet. Once it exists, swap that function for a `fetch('/predict')` call using the same input shape — the contract is documented in a comment right above the function.
+Then open <http://localhost:8000>.
 
----
+The frontend is currently self-contained. Its local estimator is implemented in [frontend/script.js](frontend/script.js); the dashboard is prepared for a future FastAPI `/predict` integration.
 
-## 🎯 Project Objectives
+## Data
 
-- Predict startup failure probability
-- Identify key risk factors
-- Forecast financial growth
-- Provide actionable recommendations
+The source dataset is stored in [data/raw/startup_failure_prediction.csv](data/raw/startup_failure_prediction.csv). It includes fields such as:
 
----
+- Startup name, industry, and business model
+- Startup age and number of founders
+- Founder experience and employee count
+- Funding, revenue, burn rate, and marketing expense
+- Market size, product uniqueness, and customer retention
+- Startup status, used as the prediction target
 
-## 🚀 Future Scope
+## Model And Analysis
 
-- Real-time data integration
-- Deep Learning models
-- Investor recommendation engine
-- Cloud deployment
+- Exploratory analysis: [notebooks/01_eda.ipynb](notebooks/01_eda.ipynb)
+- Saved model artifact: [models/startup_risk_model.pkl](models/startup_risk_model.pkl)
+- Frontend heuristic: [frontend/script.js](frontend/script.js)
+
+The frontend currently calculates a transparent estimate locally. The saved model is not yet served through an API.
+
+## Repository Structure
+
+```text
+Startup-Risk-Intelligence-AI/
+├── data/
+│   └── raw/
+│       └── startup_failure_prediction.csv
+├── frontend/
+│   ├── assets/
+│   │   └── vitals-monitor-preview.png
+│   ├── index.html
+│   ├── script.js
+│   └── style.css
+├── models/
+│   └── startup_risk_model.pkl
+├── notebooks/
+│   └── 01_eda.ipynb
+└── README.md
+```
+
+## Technology
+
+- Python and Jupyter Notebook
+- Pandas, NumPy, and scikit-learn
+- HTML, CSS, and JavaScript
+- Chart.js for dashboard visualizations
+- Pickle model artifact for the current saved model
+
+## Next Steps
+
+1. Build the FastAPI `/predict` endpoint.
+2. Define and validate the model input schema.
+3. Connect `frontend/script.js` to the API.
+4. Evaluate model performance on a held-out dataset.
+5. Add model explainability and deployment configuration.
 
