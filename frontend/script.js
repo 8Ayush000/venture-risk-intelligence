@@ -43,6 +43,7 @@ const FACTOR_INFO = {
   'Founder experience':  'Average relevant experience across founders. Not a hard rule, but inexperience raises execution risk.',
   'Product uniqueness':  'Self/expert-rated differentiation, 1-9. Commoditized products face tighter margins and more competition.',
   'Revenue / employee':  'Revenue divided by headcount, a rough efficiency signal. Low values can mean overstaffing or weak monetization.',
+  'Market size':         'Addressable market size. A smaller market limits the potential for growth and increases risk.',
   'Market efficiency':   'Revenue generated per dollar of marketing spend over the year. Low values suggest paid growth is not paying for itself.',
 };
 
@@ -62,6 +63,7 @@ function estimateRisk(input){
   const runwayMonths = input.burn > 0 ? input.funding / input.burn : 99;
   const burnMultiple = input.revenue > 0 ? (input.burn*12) / input.revenue : 8;
   const revenuePerEmployee = input.revenue / Math.max(input.employees,1);
+  const marketSizeRisk = clamp(1 - Math.log10(Math.max(input.market, 1)) / 9, 0, 1);
   const marketingEfficiency = input.marketing > 0 ? input.revenue / (input.marketing*12) : 1;
 
   const factors = [
@@ -71,9 +73,10 @@ function estimateRisk(input){
     { name:'Founder experience', risk: clamp(1 - input.exp/20, 0, 1),    detail: input.exp+' yrs avg' },
     { name:'Product uniqueness', risk: clamp(1 - input.unique/9, 0, 1),  detail: input.unique+'/9' },
     { name:'Revenue / employee', risk: clamp(1 - revenuePerEmployee/50000,0,1), detail: fmtUSD(revenuePerEmployee) },
+    { name:'Market size',        risk: marketSizeRisk,                     detail: fmtUSD(input.market) },
     { name:'Market efficiency',  risk: clamp(1 - marketingEfficiency/3,0,1), detail: marketingEfficiency.toFixed(2)+'x return' },
   ];
-  const weights = [0.24, 0.18, 0.16, 0.12, 0.1, 0.1, 0.1];
+  const weights = [0.22, 0.17, 0.15, 0.11, 0.09, 0.09, 0.08, 0.09];
   factors.forEach((f,i) => f.weight = weights[i]);
 
   let score = factors.reduce((sum,f) => sum + f.risk*f.weight, 0);

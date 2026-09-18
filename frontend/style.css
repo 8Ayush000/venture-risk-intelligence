@@ -85,7 +85,7 @@
     background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0L5 6L10 0' fill='none' stroke='%235C726C'/></svg>");
     background-repeat:no-repeat; background-position:right 12px center;
   }
-  input[type=range]{ width:100%; -webkit-appearance:none; height:4px; background:var(--border-strong); border-radius:2px; outline:none; }
+  input[type=range]{ width:100%; appearance:none; -webkit-appearance:none; height:4px; background:var(--border-strong); border-radius:2px; outline:none; }
   input[type=range]::-webkit-slider-thumb{
     -webkit-appearance:none; width:14px;height:14px;border-radius:50%;
     background:var(--teal); cursor:pointer; border:2px solid #fff; box-shadow:0 0 0 1px var(--teal);
