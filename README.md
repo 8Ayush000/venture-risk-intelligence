@@ -97,10 +97,3 @@ Risk scores currently come from a transparent local heuristic (`estimateRisk()` 
 - Investor recommendation engine
 - Cloud deployment
 
----
-
-## 👩‍💻 Author
-
-**Shagun Sangwan**  
-B.Tech Student | Data Science Enthusiast
-
