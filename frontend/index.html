@@ -1,631 +1,215 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<title>Startup Vitals Monitor</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<style>
-  :root{
-    --bg:#F6FAF9;
-    --panel:#FFFFFF;
-    --panel-soft:#FBFDFC;
-    --border:#E1EAE7;
-    --border-strong:#CBDAD6;
-    --teal:#0F9C8F;
-    --teal-soft:#E4F5F2;
-    --amber:#C97A0A;
-    --amber-soft:#FCF0DD;
-    --red:#D5433D;
-    --red-soft:#FBE6E4;
-    --mint:#1B9C6C;
-    --mint-soft:#E3F5EB;
-    --text:#132420;
-    --muted:#5C726C;
-    --muted-2:#93A69F;
-    --grid: rgba(15,156,143,0.055);
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:
-      repeating-linear-gradient(0deg, var(--grid) 0px, var(--grid) 1px, transparent 1px, transparent 26px),
-      repeating-linear-gradient(90deg, var(--grid) 0px, var(--grid) 1px, transparent 1px, transparent 26px),
-      var(--bg);
-    color:var(--text);
-    font-family:'Inter',sans-serif;
-    min-height:100vh;
-    padding:28px 20px 60px;
-  }
-  .wrap{max-width:1280px;margin:0 auto;}
-
-  .masthead{
-    display:flex; align-items:flex-end; justify-content:space-between;
-    border-bottom:1px solid var(--border-strong);
-    padding-bottom:16px; margin-bottom:22px; flex-wrap:wrap; gap:12px;
-  }
-  .brand{display:flex; align-items:center; gap:12px;}
-  .brand-mark{
-    width:36px;height:36px;border-radius:9px;
-    background:var(--teal-soft); border:1px solid var(--border-strong);
-    display:flex;align-items:center;justify-content:center;
-  }
-  .brand-mark svg{width:19px;height:19px;}
-  .brand h1{font-family:'Space Grotesk',sans-serif; font-size:19px; font-weight:600; letter-spacing:0.01em; margin:0;}
-  .brand p{margin:0; font-size:12px; color:var(--muted);}
-  .masthead-right{text-align:right; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted-2);}
-  .masthead-right .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--mint);margin-right:6px;}
-
-  .grid{display:grid; grid-template-columns: 360px 1fr; gap:18px; align-items:start;}
-  @media (max-width:940px){ .grid{grid-template-columns:1fr;} }
-
-  .panel{
-    background:var(--panel); border:1px solid var(--border);
-    border-radius:12px; padding:20px; margin-bottom:18px;
-    box-shadow:0 1px 2px rgba(19,36,32,0.03);
-  }
-  .panel-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
-  .panel-title{
-    font-family:'Space Grotesk',sans-serif; font-size:12px; letter-spacing:0.1em;
-    text-transform:uppercase; color:var(--muted); margin:0; display:flex; align-items:center; gap:8px;
-  }
-  .panel-title .idx{font-family:'IBM Plex Mono',monospace; color:var(--muted-2); font-size:11px;}
-  .info-icon{
-    width:15px;height:15px;border-radius:50%; border:1px solid var(--border-strong);
-    color:var(--muted-2); font-size:10px; display:inline-flex; align-items:center; justify-content:center;
-    cursor:help; font-family:'IBM Plex Mono',monospace;
-  }
-  .panel-sub{font-size:12px; color:var(--muted-2); margin:-8px 0 14px; line-height:1.5;}
-
-  /* form */
-  .field{margin-bottom:15px;}
-  .field label{display:flex; justify-content:space-between; align-items:baseline; font-size:12.5px; color:var(--muted); margin-bottom:6px;}
-  .field label .val{font-family:'IBM Plex Mono',monospace; color:var(--teal); font-size:12px;}
-  .row2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
-
-  input[type=text], input[type=number], select{
-    width:100%; background:var(--panel-soft); border:1px solid var(--border-strong); color:var(--text);
-    font-family:'IBM Plex Mono',monospace; font-size:13px; padding:9px 10px; border-radius:7px;
-    outline:none; transition:border-color .15s;
-  }
-  input[type=text]:focus, input[type=number]:focus, select:focus{ border-color:var(--teal); }
-  select{ font-family:'Inter',sans-serif; appearance:none; cursor:pointer;
-    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0L5 6L10 0' fill='none' stroke='%235C726C'/></svg>");
-    background-repeat:no-repeat; background-position:right 12px center;
-  }
-  input[type=range]{ width:100%; -webkit-appearance:none; height:4px; background:var(--border-strong); border-radius:2px; outline:none; }
-  input[type=range]::-webkit-slider-thumb{
-    -webkit-appearance:none; width:14px;height:14px;border-radius:50%;
-    background:var(--teal); cursor:pointer; border:2px solid #fff; box-shadow:0 0 0 1px var(--teal);
-  }
-
-  .run-btn{
-    width:100%; margin-top:6px; background:var(--teal); border:1px solid var(--teal); color:#fff;
-    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:13.5px; letter-spacing:0.02em;
-    padding:13px; border-radius:8px; cursor:pointer; transition:background .15s, transform .05s;
-  }
-  .run-btn:hover{background:#0C8074;}
-  .run-btn:active{transform:scale(0.99);}
-
-  /* score row */
-  .score-row{display:grid; grid-template-columns:200px 1fr; gap:22px; align-items:center;}
-  @media (max-width:700px){ .score-row{grid-template-columns:1fr;} }
-  .gauge-wrap{position:relative; text-align:center;}
-  .gauge-num{font-family:'Space Grotesk',sans-serif; font-size:38px; font-weight:700; line-height:1;}
-  .gauge-label{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; padding:3px 9px; border-radius:5px; border:1px solid; display:inline-block; margin-top:8px;}
-  .conf-badge{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--muted-2); margin-top:8px;}
-
-  svg#wave{width:100%; height:80px; display:block;}
-  .wave-caption{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--muted-2); margin-top:4px; text-align:right;}
-
-  .charts-2col{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
-  @media (max-width:800px){ .charts-2col{grid-template-columns:1fr;} }
-  canvas{max-width:100%;}
-
-  .vitals{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
-  @media (max-width:600px){ .vitals{grid-template-columns:1fr;} }
-  .vital{border:1px solid var(--border); border-radius:9px; padding:11px 13px; background:var(--panel-soft);}
-  .vital-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:7px; gap:8px;}
-  .vital-name{font-size:12px; color:var(--muted); display:flex; align-items:center; gap:5px;}
-  .vital-value{font-family:'IBM Plex Mono',monospace; font-size:12.5px; white-space:nowrap;}
-  .bar-track{height:5px; border-radius:3px; background:var(--border); overflow:hidden;}
-  .bar-fill{height:100%; border-radius:3px; transition:width .6s cubic-bezier(.3,.8,.3,1);}
-  .vital-explain{font-size:11px; color:var(--muted-2); margin-top:6px; line-height:1.4; display:none;}
-  .vital.open .vital-explain{display:block;}
-  .vital-name{cursor:pointer;}
-
-  .flags{display:flex; flex-direction:column; gap:8px;}
-  .flag{
-    display:flex; align-items:flex-start; gap:9px; font-size:12.5px; padding:9px 12px;
-    border-radius:8px; border:1px solid var(--border);
-  }
-  .flag.ok{background:var(--mint-soft); border-color:#BFE6D2; color:#0F5C3D;}
-  .flag.warn{background:var(--amber-soft); border-color:#F2DAA8; color:#7A4E08;}
-  .flag-dot{width:6px;height:6px;border-radius:50%; margin-top:5px; flex-shrink:0;}
-  .flag.ok .flag-dot{background:var(--mint);}
-  .flag.warn .flag-dot{background:var(--amber);}
-
-  .verdict{margin-top:4px; padding:14px 16px; border-radius:9px; border:1px dashed var(--border-strong); font-size:13px; color:var(--muted); line-height:1.6; background:var(--panel-soft);}
-  .verdict b{color:var(--text); font-weight:600;}
-  .verdict code{background:var(--teal-soft); color:var(--teal); padding:1px 5px; border-radius:4px; font-family:'IBM Plex Mono',monospace; font-size:11.5px;}
-
-  .empty-state{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:60px 20px; color:var(--muted-2);}
-  .empty-state svg{width:38px;height:38px; margin-bottom:14px; opacity:0.5;}
-  .empty-state p{font-size:13px; max-width:280px; margin:0;}
-
-  .footer-note{margin-top:8px; font-size:11.5px; color:var(--muted-2); text-align:center; font-family:'IBM Plex Mono',monospace;}
-  .footer-note code{color:var(--muted); background:var(--panel); padding:1px 5px; border-radius:4px; border:1px solid var(--border);}
-</style>
+  <meta charset="UTF-8">
+  <title>Startup Vitals Monitor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-<div class="wrap">
+  <div class="wrap">
 
-  <div class="masthead">
-    <div class="brand">
-      <div class="brand-mark">
-        <svg viewBox="0 0 24 24" fill="none"><path d="M2 12h4l2-7 4 14 3-10 2 4h5" stroke="#0F9C8F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div class="masthead">
+      <div class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M2 12h4l2-7 4 14 3-10 2 4h5" stroke="#0F9C8F" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+        </div>
+        <div>
+          <h1>Startup Vitals Monitor</h1>
+          <p>Failure-risk diagnostics · Startup Risk Intelligence AI</p>
+        </div>
       </div>
+      <div class="masthead-right">
+        <div><span class="dot"></span>LOCAL ESTIMATOR — v2</div>
+        <div>model: pending FastAPI /predict</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- INTAKE -->
       <div>
-        <h1>Startup Vitals Monitor</h1>
-        <p>Failure-risk diagnostics · Startup Risk Intelligence AI</p>
-      </div>
-    </div>
-    <div class="masthead-right">
-      <div><span class="dot"></span>LOCAL ESTIMATOR — v2</div>
-      <div>model: pending FastAPI /predict</div>
-    </div>
-  </div>
-
-  <div class="grid">
-    <!-- INTAKE -->
-    <div>
-      <div class="panel">
-        <div class="panel-head">
-          <p class="panel-title"><span class="idx">01</span> Intake Chart</p>
-          <span class="info-icon" title="Values are checked against the ranges seen in data/raw/startup_failure_prediction.csv. Inputs far outside that range lower the confidence score.">?</span>
-        </div>
-
-        <div class="field">
-          <label>Startup name</label>
-          <input type="text" id="name" value="Nimbus Freight">
-        </div>
-
-        <div class="row2">
-          <div class="field">
-            <label>Industry</label>
-            <select id="industry">
-              <option>Logistics</option><option>Education</option><option>Healthcare</option>
-              <option>E-commerce</option><option>Finance</option><option>Tech</option><option>AI/ML</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Business model</label>
-            <select id="model"><option>B2B</option><option>B2C</option><option>Hybrid</option></select>
-          </div>
-        </div>
-
-        <div class="row2">
-          <div class="field"><label>Startup age <span class="val" id="ageVal">3 yrs</span></label><input type="range" id="age" min="0" max="14" value="3"></div>
-          <div class="field"><label>Founders <span class="val" id="foundersVal">2</span></label><input type="range" id="founders" min="1" max="4" value="2"></div>
-        </div>
-
-        <div class="field"><label>Avg. founder experience <span class="val" id="expVal">8 yrs</span></label><input type="range" id="exp" min="0" max="29" value="8"></div>
-
-        <div class="row2">
-          <div class="field"><label>Employees</label><input type="number" id="employees" value="45" min="1" max="999"></div>
-          <div class="field"><label>Funding raised</label><input type="number" id="funding" value="2500000" min="0"></div>
-        </div>
-        <div class="row2">
-          <div class="field"><label>Annual revenue</label><input type="number" id="revenue" value="900000" min="0"></div>
-          <div class="field"><label>Monthly burn rate</label><input type="number" id="burn" value="140000" min="0"></div>
-        </div>
-        <div class="row2">
-          <div class="field"><label>Addressable market</label><input type="number" id="market" value="500000000" min="0"></div>
-          <div class="field"><label>Monthly marketing spend</label><input type="number" id="marketing" value="30000" min="0"></div>
-        </div>
-
-        <div class="field"><label>Product uniqueness <span class="val" id="uniqueVal">6 / 9</span></label><input type="range" id="unique" min="1" max="9" value="6"></div>
-        <div class="field"><label>Customer retention <span class="val" id="retentionVal">72%</span></label><input type="range" id="retention" min="0" max="100" value="72"></div>
-
-        <button class="run-btn" id="runBtn">Run diagnosis →</button>
-      </div>
-    </div>
-
-    <!-- MONITOR -->
-    <div id="monitorCol">
-      <div class="panel">
-        <div class="panel-head">
-          <p class="panel-title"><span class="idx">02</span> Overall Reading</p>
-        </div>
-        <div id="emptyState" class="empty-state">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M2 12h4l2-7 4 14 3-10 2 4h5" stroke="#93A69F" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <p>Fill in the intake chart and run a diagnosis to see this startup's vitals.</p>
-        </div>
-        <div id="results" style="display:none;">
-          <div class="score-row">
-            <div class="gauge-wrap">
-              <svg id="gauge" viewBox="0 0 200 120" width="180"></svg>
-              <div class="gauge-num" id="scoreNum">—</div>
-              <span class="gauge-label" id="scoreLabel">—</span>
-              <div class="conf-badge" id="confBadge">confidence —</div>
-            </div>
-            <div>
-              <svg id="wave" viewBox="0 0 600 80" preserveAspectRatio="none"></svg>
-              <div class="wave-caption" id="waveCaption">pulse — awaiting signal</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="chartPanels" style="display:none;">
-
         <div class="panel">
           <div class="panel-head">
-            <p class="panel-title"><span class="idx">03</span> Why This Score <span class="info-icon" title="Each factor's weighted contribution to the final 0-100 risk score, largest first. This is the estimator's full working, not a black box.">?</span></p>
+            <p class="panel-title"><span class="idx">01</span> Intake Chart</p>
+            <span class="info-icon"
+              title="Values are checked against the ranges seen in data/raw/startup_failure_prediction.csv. Inputs far outside that range lower the confidence score.">?</span>
           </div>
-          <p class="panel-sub">Weighted contribution of each factor. Click a factor below for a plain-language explanation.</p>
-          <div style="height:230px;"><canvas id="contribChart"></canvas></div>
-          <div class="vitals" id="vitalsList" style="margin-top:16px;"></div>
+
+          <div class="field">
+            <label>Startup name</label>
+            <input type="text" id="name" value="Nimbus Freight">
+          </div>
+
+          <div class="row2">
+            <div class="field">
+              <label>Industry</label>
+              <select id="industry">
+                <option>Logistics</option>
+                <option>Education</option>
+                <option>Healthcare</option>
+                <option>E-commerce</option>
+                <option>Finance</option>
+                <option>Tech</option>
+                <option>AI/ML</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Business model</label>
+              <select id="model">
+                <option>B2B</option>
+                <option>B2C</option>
+                <option>Hybrid</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row2">
+            <div class="field"><label>Startup age <span class="val" id="ageVal">3 yrs</span></label><input type="range"
+                id="age" min="0" max="14" value="3"></div>
+            <div class="field"><label>Founders <span class="val" id="foundersVal">2</span></label><input type="range"
+                id="founders" min="1" max="4" value="2"></div>
+          </div>
+
+          <div class="field"><label>Avg. founder experience <span class="val" id="expVal">8 yrs</span></label><input
+              type="range" id="exp" min="0" max="29" value="8"></div>
+
+          <div class="row2">
+            <div class="field"><label>Employees</label><input type="number" id="employees" value="45" min="1" max="999">
+            </div>
+            <div class="field"><label>Funding raised</label><input type="number" id="funding" value="2500000" min="0">
+            </div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Annual revenue</label><input type="number" id="revenue" value="900000" min="0">
+            </div>
+            <div class="field"><label>Monthly burn rate</label><input type="number" id="burn" value="140000" min="0">
+            </div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Addressable market</label><input type="number" id="market" value="500000000"
+                min="0"></div>
+            <div class="field"><label>Monthly marketing spend</label><input type="number" id="marketing" value="30000"
+                min="0"></div>
+          </div>
+
+          <div class="field"><label>Product uniqueness <span class="val" id="uniqueVal">6 / 9</span></label><input
+              type="range" id="unique" min="1" max="9" value="6"></div>
+          <div class="field"><label>Customer retention <span class="val" id="retentionVal">72%</span></label><input
+              type="range" id="retention" min="0" max="100" value="72"></div>
+
+          <button class="run-btn" id="runBtn">Run diagnosis →</button>
+        </div>
+      </div>
+
+      <!-- MONITOR -->
+      <div id="monitorCol">
+        <div class="panel">
+          <div class="panel-head">
+            <p class="panel-title"><span class="idx">02</span> Overall Reading</p>
+          </div>
+          <div id="emptyState" class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M2 12h4l2-7 4 14 3-10 2 4h5" stroke="#93A69F" stroke-width="1.6" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+            <p>Fill in the intake chart and run a diagnosis to see this startup's vitals.</p>
+          </div>
+          <div id="results" style="display:none;">
+            <div class="score-row">
+              <div class="gauge-wrap">
+                <svg id="gauge" viewBox="0 0 200 120" width="180"></svg>
+                <div class="gauge-num" id="scoreNum">—</div>
+                <span class="gauge-label" id="scoreLabel">—</span>
+                <div class="conf-badge" id="confBadge">confidence —</div>
+              </div>
+              <div>
+                <svg id="wave" viewBox="0 0 600 80" preserveAspectRatio="none"></svg>
+                <div class="wave-caption" id="waveCaption">pulse — awaiting signal</div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="charts-2col">
+        <div id="chartPanels" style="display:none;">
+
           <div class="panel">
             <div class="panel-head">
-              <p class="panel-title"><span class="idx">04</span> Risk Profile <span class="info-icon" title="Each axis is a health score (0-100, higher = healthier), not a risk score — so a bigger shape means a healthier startup.">?</span></p>
+              <p class="panel-title"><span class="idx">03</span> Why This Score <span class="info-icon"
+                  title="Each factor's weighted contribution to the final 0-100 risk score, largest first. This is the estimator's full working, not a black box.">?</span>
+              </p>
             </div>
-            <div style="height:260px;"><canvas id="radarChart"></canvas></div>
+            <p class="panel-sub">Weighted contribution of each factor. Click a factor below for a plain-language
+              explanation.</p>
+            <div style="height:230px;"><canvas id="contribChart"></canvas></div>
+            <div class="vitals" id="vitalsList" style="margin-top:16px;"></div>
           </div>
+
+          <div class="charts-2col">
+            <div class="panel">
+              <div class="panel-head">
+                <p class="panel-title"><span class="idx">04</span> Risk Profile <span class="info-icon"
+                    title="Each axis is a health score (0-100, higher = healthier), not a risk score — so a bigger shape means a healthier startup.">?</span>
+                </p>
+              </div>
+              <div style="height:260px;"><canvas id="radarChart"></canvas></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head">
+                <p class="panel-title"><span class="idx">05</span> Cash Runway Projection <span class="info-icon"
+                    title="Projects cash balance forward assuming current burn rate and a modest 2%/month revenue growth. A straight-line projection, not a forecast of what will actually happen.">?</span>
+                </p>
+              </div>
+              <div style="height:260px;"><canvas id="runwayChart"></canvas></div>
+            </div>
+          </div>
+
           <div class="panel">
             <div class="panel-head">
-              <p class="panel-title"><span class="idx">05</span> Cash Runway Projection <span class="info-icon" title="Projects cash balance forward assuming current burn rate and a modest 2%/month revenue growth. A straight-line projection, not a forecast of what will actually happen.">?</span></p>
+              <p class="panel-title"><span class="idx">06</span> Benchmark vs Dataset Average <span class="info-icon"
+                  title="Compares this startup to the mean values in data/raw/startup_failure_prediction.csv (5,000 startups). Bars past 100% mean above-average for that metric.">?</span>
+              </p>
             </div>
-            <div style="height:260px;"><canvas id="runwayChart"></canvas></div>
+            <div style="height:240px;"><canvas id="benchmarkChart"></canvas></div>
           </div>
-        </div>
 
-        <div class="panel">
-          <div class="panel-head">
-            <p class="panel-title"><span class="idx">06</span> Benchmark vs Dataset Average <span class="info-icon" title="Compares this startup to the mean values in data/raw/startup_failure_prediction.csv (5,000 startups). Bars past 100% mean above-average for that metric.">?</span></p>
+          <div class="panel">
+            <div class="panel-head">
+              <p class="panel-title"><span class="idx">07</span> Reliability Check</p>
+            </div>
+            <p class="panel-sub">How much to trust this reading — flags any input far outside the range the estimator
+              was calibrated on.</p>
+            <div class="flags" id="flagsList"></div>
           </div>
-          <div style="height:240px;"><canvas id="benchmarkChart"></canvas></div>
-        </div>
 
-        <div class="panel">
-          <div class="panel-head">
-            <p class="panel-title"><span class="idx">07</span> Reliability Check</p>
+          <div class="panel">
+            <div class="panel-head">
+              <p class="panel-title"><span class="idx">08</span> Verdict</p>
+            </div>
+            <div class="verdict" id="verdict"></div>
           </div>
-          <p class="panel-sub">How much to trust this reading — flags any input far outside the range the estimator was calibrated on.</p>
-          <div class="flags" id="flagsList"></div>
-        </div>
 
-        <div class="panel">
-          <div class="panel-head"><p class="panel-title"><span class="idx">08</span> Verdict</p></div>
-          <div class="verdict" id="verdict"></div>
         </div>
-
       </div>
     </div>
-  </div>
 
-  <div class="footer-note">
-    Scores come from a transparent local heuristic in <code>estimateRisk()</code> — swap it for a call to your FastAPI <code>/predict</code> endpoint once <code>api/main.py</code> is built, keeping the same input shape.
-  </div>
-</div>
-
-<script>
-const $ = id => document.getElementById(id);
-
-const bind = (id, valId, fmt) => {
-  const el = $(id), out = $(valId);
-  const update = () => out.textContent = fmt(el.value);
-  el.addEventListener('input', update);
-  update();
-};
-bind('age','ageVal', v => v + ' yrs');
-bind('founders','foundersVal', v => v);
-bind('exp','expVal', v => v + ' yrs');
-bind('unique','uniqueVal', v => v + ' / 9');
-bind('retention','retentionVal', v => v + '%');
-
-function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
-function fmtUSD(n){
-  const sign = n < 0 ? '-' : '';
-  n = Math.abs(n);
-  if (n >= 1e6) return sign + '$' + (n/1e6).toFixed(1) + 'M';
-  if (n >= 1e3) return sign + '$' + (n/1e3).toFixed(0) + 'K';
-  return sign + '$' + n.toFixed(0);
-}
-
-// Ranges observed in data/raw/startup_failure_prediction.csv (5,000 rows) — used for
-// benchmarking and to flag inputs that fall outside the estimator's calibration range.
-const DATASET = {
-  age:        { min:0,     max:14,       mean:7.0 },
-  funding:    { min:11209, max:49993132, mean:24973410 },
-  founders:   { min:1,     max:4,        mean:2.5 },
-  exp:        { min:0,     max:29,       mean:14.7 },
-  employees:  { min:1,     max:999,      mean:496.7 },
-  revenue:    { min:3213,  max:99996630, mean:49920150 },
-  burn:       { min:5016,  max:999554,   mean:500960 },
-  unique:     { min:1,     max:9,        mean:4.96 },
-  retention:  { min:0.04,  max:99.98,    mean:50.2 },
-  marketing:  { min:5253,  max:999866,   mean:507304 },
-};
-
-const FACTOR_INFO = {
-  'Runway':             'Months of cash left at the current burn rate. Under ~12 months is the classic danger zone for the next fundraise.',
-  'Burn multiple':       'Annual burn divided by annual revenue. Above 2-3x is generally seen as inefficient spend relative to growth.',
-  'Retention':           'Share of customers who stick around. Low retention undermines every other growth metric.',
-  'Founder experience':  'Average relevant experience across founders. Not a hard rule, but inexperience raises execution risk.',
-  'Product uniqueness':  'Self/expert-rated differentiation, 1-9. Commoditized products face tighter margins and more competition.',
-  'Revenue / employee':  'Revenue divided by headcount, a rough efficiency signal. Low values can mean overstaffing or weak monetization.',
-  'Market efficiency':   'Revenue generated per dollar of marketing spend over the year. Low values suggest paid growth is not paying for itself.',
-};
-
-/*
-  estimateRisk(input) -> { score, factors, runwayMonths, confidence, flags }
-  Transparent, hand-weighted heuristic standing in for the trained model in
-  models/startup_risk_model.pkl. Reads the same feature set as
-  data/raw/startup_failure_prediction.csv.
-
-  API CONTRACT for later swap-in:
-    POST /predict { startup_age, funding_amount, number_of_founders, founder_experience,
-                     employees_count, revenue, burn_rate, market_size, business_model,
-                     product_uniqueness_score, customer_retention_rate, marketing_expense, industry }
-    -> { risk_score: 0-100, factors: [{name, contribution, value}], runway_months, confidence }
-*/
-function estimateRisk(input){
-  const runwayMonths = input.burn > 0 ? input.funding / input.burn : 99;
-  const burnMultiple = input.revenue > 0 ? (input.burn*12) / input.revenue : 8;
-  const revenuePerEmployee = input.revenue / Math.max(input.employees,1);
-  const marketingEfficiency = input.marketing > 0 ? input.revenue / (input.marketing*12) : 1;
-
-  const factors = [
-    { name:'Runway',             risk: clamp(1 - runwayMonths/24, 0, 1), detail: runwayMonths.toFixed(1)+' mo left' },
-    { name:'Burn multiple',      risk: clamp(burnMultiple/10, 0, 1),     detail: burnMultiple.toFixed(1)+'x revenue' },
-    { name:'Retention',          risk: clamp(1 - input.retention/100,0,1), detail: input.retention+'%' },
-    { name:'Founder experience', risk: clamp(1 - input.exp/20, 0, 1),    detail: input.exp+' yrs avg' },
-    { name:'Product uniqueness', risk: clamp(1 - input.unique/9, 0, 1),  detail: input.unique+'/9' },
-    { name:'Revenue / employee', risk: clamp(1 - revenuePerEmployee/50000,0,1), detail: fmtUSD(revenuePerEmployee) },
-    { name:'Market efficiency',  risk: clamp(1 - marketingEfficiency/3,0,1), detail: marketingEfficiency.toFixed(2)+'x return' },
-  ];
-  const weights = [0.24, 0.18, 0.16, 0.12, 0.1, 0.1, 0.1];
-  factors.forEach((f,i) => f.weight = weights[i]);
-
-  let score = factors.reduce((sum,f) => sum + f.risk*f.weight, 0);
-  score = clamp(score, 0, 1);
-  if (input.age <= 1) score = clamp(score - 0.03, 0, 1); // young-startup grace factor
-
-  // --- reliability / confidence -------------------------------------------------
-  const checks = [
-    { key:'age', label:'Startup age', v:input.age },
-    { key:'funding', label:'Funding raised', v:input.funding },
-    { key:'founders', label:'Founders', v:input.founders },
-    { key:'exp', label:'Founder experience', v:input.exp },
-    { key:'employees', label:'Employees', v:input.employees },
-    { key:'revenue', label:'Revenue', v:input.revenue },
-    { key:'burn', label:'Burn rate', v:input.burn },
-    { key:'unique', label:'Product uniqueness', v:input.unique },
-    { key:'retention', label:'Retention', v:input.retention },
-    { key:'marketing', label:'Marketing spend', v:input.marketing },
-  ];
-  const flags = [];
-  let outOfRange = 0;
-  checks.forEach(c => {
-    const range = DATASET[c.key];
-    if (c.v < range.min || c.v > range.max){
-      outOfRange++;
-      flags.push({ ok:false, text:`${c.label} (${typeof c.v === 'number' && c.v > 1000 ? fmtUSD(c.v) : c.v}) is outside the ${c.key==='retention'||c.key==='unique'?'':'$'}${range.min}–${range.max} range seen in training data — treat this reading with extra caution.` });
-    }
-  });
-  if (input.burn === 0) flags.push({ ok:false, text:'Burn rate is $0 — runway cannot be meaningfully estimated.' });
-  if (flags.length === 0) flags.push({ ok:true, text:'All inputs fall within the ranges observed in the training dataset.' });
-
-  const confidence = clamp(96 - outOfRange*11 - (input.burn===0?15:0), 35, 96);
-
-  return { score: Math.round(score*100), factors, runwayMonths, burnMultiple, revenuePerEmployee, marketingEfficiency, confidence, flags };
-}
-
-function colorFor(risk){
-  if (risk < 0.34) return getComputedStyle(document.documentElement).getPropertyValue('--mint').trim();
-  if (risk < 0.62) return getComputedStyle(document.documentElement).getPropertyValue('--amber').trim();
-  return getComputedStyle(document.documentElement).getPropertyValue('--red').trim();
-}
-
-function drawWave(svg, riskPct){
-  const amp = 6 + riskPct*0.28;
-  const spikes = riskPct > 60;
-  let d = 'M0,40 ';
-  const points = 40;
-  for(let i=1;i<=points;i++){
-    const x = i*(600/points);
-    let y = spikes && i % 6 === 0 ? 40 - amp*2*(i%12===0?1:-1) : 40 + Math.sin(i*0.9)*amp*0.55;
-    d += `L${x.toFixed(1)},${y.toFixed(1)} `;
-  }
-  svg.innerHTML = `<path d="${d}" fill="none" stroke="${colorFor(riskPct/100)}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
-}
-
-function drawGauge(svg, scorePct){
-  const c = colorFor(scorePct/100);
-  const r = 80, cx = 100, cy = 100;
-  const startAngle = Math.PI, endAngle = 0; // semicircle top
-  const angle = Math.PI - (scorePct/100)*Math.PI;
-  const arcPoint = (a) => [cx + r*Math.cos(a), cy - r*Math.sin(a)];
-  const [x1,y1] = arcPoint(startAngle);
-  const [x2,y2] = arcPoint(0);
-  const [xn,yn] = arcPoint(angle);
-  const largeArc = angle < Math.PI/2 ? 1 : 0;
-  svg.innerHTML = `
-    <path d="M${x1},${y1} A${r},${r} 0 0 1 ${x2},${y2}" fill="none" stroke="#E1EAE7" stroke-width="14" stroke-linecap="round"/>
-    <path d="M${x1},${y1} A${r},${r} 0 ${largeArc} 1 ${xn},${yn}" fill="none" stroke="${c}" stroke-width="14" stroke-linecap="round"/>
-  `;
-}
-
-function renderVital(f){
-  const pct = Math.round(f.risk*100);
-  const c = colorFor(f.risk);
-  return `<div class="vital" data-name="${f.name}">
-    <div class="vital-top">
-      <span class="vital-name">${f.name} ⌄</span>
-      <span class="vital-value" style="color:${c}">${f.detail}</span>
+    <div class="footer-note">
+      Scores come from a transparent local heuristic in <code>estimateRisk()</code> — swap it for a call to your FastAPI
+      <code>/predict</code> endpoint once <code>api/main.py</code> is built, keeping the same input shape.
     </div>
-    <div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:${c};"></div></div>
-    <div class="vital-explain">${FACTOR_INFO[f.name]} Weighted at ${(f.weight*100).toFixed(0)}% of the total score.</div>
-  </div>`;
-}
+  </div>
 
-let contribChart, radarChart, runwayChart, benchmarkChart;
+  <script src="script.js">
 
-function upsertChart(existing, ctx, config){
-  if (existing){ existing.data = config.data; existing.options = config.options; existing.update(); return existing; }
-  return new Chart(ctx, config);
-}
-
-$('runBtn').addEventListener('click', () => {
-  const input = {
-    age: +$('age').value, founders: +$('founders').value, exp: +$('exp').value,
-    employees: +$('employees').value, funding: +$('funding').value, revenue: +$('revenue').value,
-    burn: +$('burn').value, market: +$('market').value, marketing: +$('marketing').value,
-    unique: +$('unique').value, retention: +$('retention').value,
-    industry: $('industry').value, model: $('model').value,
-  };
-
-  const { score, factors, runwayMonths, burnMultiple, revenuePerEmployee, marketingEfficiency, confidence, flags } = estimateRisk(input);
-  const c = colorFor(score/100);
-  const label = score < 34 ? 'Stable' : score < 62 ? 'Elevated' : 'Critical';
-
-  $('emptyState').style.display = 'none';
-  $('results').style.display = 'block';
-  $('chartPanels').style.display = 'block';
-
-  $('scoreNum').textContent = score;
-  $('scoreNum').style.color = c;
-  const labelEl = $('scoreLabel');
-  labelEl.textContent = label + ' risk';
-  labelEl.style.color = c; labelEl.style.borderColor = c;
-  $('confBadge').textContent = `confidence ${confidence}%`;
-
-  drawGauge($('gauge'), score);
-  drawWave($('wave'), score);
-  $('waveCaption').textContent = `pulse — ${label.toLowerCase()} signal · runway ${runwayMonths.toFixed(1)} mo`;
-
-  $('vitalsList').innerHTML = factors.map(renderVital).join('');
-  document.querySelectorAll('.vital .vital-name').forEach(el => {
-    el.addEventListener('click', () => el.closest('.vital').classList.toggle('open'));
-  });
-
-  // --- contribution (waterfall-style) chart --------------------------------
-  const sorted = [...factors].sort((a,b) => (b.risk*b.weight) - (a.risk*a.weight));
-  contribChart = upsertChart(contribChart, $('contribChart'), {
-    type: 'bar',
-    data: {
-      labels: sorted.map(f => f.name),
-      datasets: [{
-        data: sorted.map(f => +(f.risk*f.weight*100).toFixed(1)),
-        backgroundColor: sorted.map(f => colorFor(f.risk)),
-        borderRadius: 4,
-      }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend:{display:false}, tooltip:{ callbacks:{ label: (ctx) => `contributes ${ctx.parsed.x} pts to the score` } } },
-      scales: {
-        x: { title:{display:true,text:'points contributed to final score',font:{size:11}}, grid:{color:'#EEF3F1'} },
-        y: { grid:{display:false} }
-      }
-    }
-  });
-
-  // --- radar (health, higher = better) --------------------------------------
-  radarChart = upsertChart(radarChart, $('radarChart'), {
-    type: 'radar',
-    data: {
-      labels: factors.map(f => f.name),
-      datasets: [{
-        label: input.name || 'Startup',
-        data: factors.map(f => Math.round((1-f.risk)*100)),
-        backgroundColor: 'rgba(15,156,143,0.15)',
-        borderColor: '#0F9C8F', pointBackgroundColor:'#0F9C8F', borderWidth:2,
-      }]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      scales: { r: { min:0, max:100, ticks:{stepSize:25, backdropColor:'transparent', color:'#93A69F'}, grid:{color:'#E1EAE7'}, angleLines:{color:'#E1EAE7'}, pointLabels:{font:{size:10.5}, color:'#5C726C'} } },
-      plugins: { legend:{display:false} }
-    }
-  });
-
-  // --- cash runway projection ------------------------------------------------
-  const months = Array.from({length:25}, (_,i) => i);
-  let cash = input.funding, monthlyRevenue = input.revenue/12;
-  const cashSeries = months.map(m => {
-    if (m > 0){ cash += monthlyRevenue - input.burn; monthlyRevenue *= 1.02; }
-    return Math.round(cash);
-  });
-  const zeroMonth = cashSeries.findIndex(v => v <= 0);
-  runwayChart = upsertChart(runwayChart, $('runwayChart'), {
-    type: 'line',
-    data: {
-      labels: months.map(m => 'M'+m),
-      datasets: [{
-        data: cashSeries, borderColor:'#0F9C8F', backgroundColor:'rgba(15,156,143,0.08)',
-        fill:true, tension:0.3, pointRadius:0, borderWidth:2,
-      }]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins: {
-        legend:{display:false},
-        tooltip:{ callbacks:{ label: (ctx) => fmtUSD(ctx.parsed.y) + ' cash on hand' } },
-        annotation: undefined,
-      },
-      scales: {
-        y: { ticks:{ callback: v => fmtUSD(v) }, grid:{color:'#EEF3F1'} },
-        x: { grid:{display:false}, ticks:{maxTicksLimit:9} }
-      }
-    }
-  });
-
-  // --- benchmark vs dataset mean ---------------------------------------------
-  const bench = [
-    { label:'Funding', v: input.funding, mean: DATASET.funding.mean },
-    { label:'Revenue', v: input.revenue, mean: DATASET.revenue.mean },
-    { label:'Burn rate', v: input.burn, mean: DATASET.burn.mean },
-    { label:'Marketing', v: input.marketing, mean: DATASET.marketing.mean },
-    { label:'Retention', v: input.retention, mean: DATASET.retention.mean },
-    { label:'Employees', v: input.employees, mean: DATASET.employees.mean },
-  ];
-  benchmarkChart = upsertChart(benchmarkChart, $('benchmarkChart'), {
-    type: 'bar',
-    data: {
-      labels: bench.map(b => b.label),
-      datasets: [
-        { label: input.name || 'Startup', data: bench.map(b => +((b.v/b.mean)*100).toFixed(0)), backgroundColor:'#0F9C8F', borderRadius:4 },
-        { label: 'Dataset average', data: bench.map(() => 100), backgroundColor:'#E1EAE7', borderRadius:4 },
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins: { legend:{position:'bottom', labels:{boxWidth:10,font:{size:11}}}, tooltip:{ callbacks:{ label: (ctx) => ctx.dataset.label + ': ' + ctx.parsed.y + '% of dataset average' } } },
-      scales: { y:{ title:{display:true,text:'% of dataset average',font:{size:11}}, grid:{color:'#EEF3F1'} }, x:{ grid:{display:false} } }
-    }
-  });
-
-  // --- reliability flags ---------------------------------------------------
-  $('flagsList').innerHTML = flags.map(f => `<div class="flag ${f.ok?'ok':'warn'}"><span class="flag-dot"></span><span>${f.text}</span></div>`).join('');
-
-  // --- verdict ---------------------------------------------------------------
-  const name = $('name').value || 'This startup';
-  const topRisk = [...factors].sort((a,b)=>b.risk-a.risk)[0];
-  const runwayNote = zeroMonth === -1 ? 'holds a positive cash balance through the full 24-month projection' : `runs out of cash in month ${zeroMonth} of the projection`;
-  $('verdict').innerHTML = `<b>${name}</b> scores <b>${score}/100</b> (${label.toLowerCase()} risk), estimated with <b>${confidence}% confidence</b>.
-    The largest contributor is <b>${topRisk.name.toLowerCase()}</b> (${topRisk.detail}).
-    At current burn and a modest 2%/month revenue growth assumption, the projection ${runwayNote}.
-    This is a transparent heuristic, not the trained model — wire up <code>/predict</code> from <b>api/main.py</b> to replace it once the FastAPI backend exists.`;
-});
-
-$('runBtn').click();
-</script>
+  </script>
 </body>
+
 </html>
