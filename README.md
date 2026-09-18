@@ -1,40 +1,44 @@
 # Startup Risk Intelligence AI
 
-Startup Risk Intelligence AI is a startup failure-risk analysis project. It combines an exploratory data-science workflow with a browser-based dashboard for reviewing financial, operational, and market signals.
+Startup Risk Intelligence AI is a research project for exploring startup failure risk using financial, operational, market, and business information.
 
-## Project Status
+The repository includes an exploratory notebook and a browser-based dashboard called **Startup Vitals Monitor**.
 
-### Available now
+## Current Status
 
-- Raw startup dataset with financial and operating indicators
-- Exploratory analysis notebook
-- Saved startup risk model artifact
-- Interactive **Startup Vitals Monitor** frontend
-- Transparent local risk estimator with charts and explanations
+### Available
 
-### In progress
+- Exploratory data-analysis notebook
+- Local startup-risk dataset
+- Saved model artifact for local experimentation
+- Interactive browser dashboard
+- Transparent heuristic risk estimate with charts
 
+### Planned
+
+- Reproducible model training and evaluation
 - FastAPI prediction service
-- Connection between the frontend and the saved model
-- Production training and evaluation workflow
+- Frontend connection to the trained model
+- Model explainability and deployment support
 
-## Frontend Dashboard
+## Dashboard
 
-The dashboard accepts startup information and displays:
+The dashboard provides:
 
-- Overall risk score and confidence
-- Risk classification: stable, elevated, or critical
-- Weighted factor contributions
-- Health profile radar chart
+- Startup information intake
+- Risk score and risk category
+- Input reliability indicator
+- Factor contribution breakdown
+- Risk profile radar chart
 - Cash runway projection
-- Comparison with dataset averages
-- Reliability warnings for inputs outside observed dataset ranges
+- Dataset benchmark comparison
+- Warnings for values outside observed ranges
 
 ![Startup Vitals Monitor preview](frontend/assets/vitals-monitor-preview.png)
 
-### Run the dashboard
+### Run locally
 
-The simplest option is to open [frontend/index.html](frontend/index.html) directly in a browser.
+Open [frontend/index.html](frontend/index.html) directly in a browser.
 
 For a local development server, run this command from the repository root:
 
@@ -42,44 +46,44 @@ For a local development server, run this command from the repository root:
 python -m http.server 8000 --directory frontend
 ```
 
-Then open <http://localhost:8000>.
+Then visit <http://localhost:8000>.
 
-The frontend is currently self-contained. Its local estimator is implemented in [frontend/script.js](frontend/script.js); the dashboard is prepared for a future FastAPI `/predict` integration.
+The dashboard uses [frontend/script.js](frontend/script.js) for its local estimator and [frontend/style.css](frontend/style.css) for styling. The current estimator is not yet connected to a backend API.
 
-## Data
+## Data And Model
 
-The source dataset is stored in [data/raw/startup_failure_prediction.csv](data/raw/startup_failure_prediction.csv). It includes fields such as:
+The project uses a local CSV dataset and a local model artifact for experimentation. These files may contain valuable project data and should not be committed, published, or copied into documentation without review.
 
-- Startup name, industry, and business model
-- Startup age and number of founders
-- Founder experience and employee count
-- Funding, revenue, burn rate, and marketing expense
-- Market size, product uniqueness, and customer retention
-- Startup status, used as the prediction target
+The dataset contains fields related to:
 
-## Model And Analysis
+- Startup age and founder information
+- Industry and business model
+- Employees and financial metrics
+- Market size and marketing activity
+- Product uniqueness and customer retention
+- Startup status for supervised learning
 
-- Exploratory analysis: [notebooks/01_eda.ipynb](notebooks/01_eda.ipynb)
-- Saved model artifact: [models/startup_risk_model.pkl](models/startup_risk_model.pkl)
-- Frontend heuristic: [frontend/script.js](frontend/script.js)
+The model artifact is not served through an API yet. Treat local model files as untrusted binary artifacts and do not load unknown files.
 
-The frontend currently calculates a transparent estimate locally. The saved model is not yet served through an API.
+## Analysis
+
+The main exploratory notebook is [notebooks/01_eda.ipynb](notebooks/01_eda.ipynb).
+
+Use the notebook to inspect data quality, feature distributions, target labels, and class balance before training or evaluating a model.
 
 ## Repository Structure
 
 ```text
 Startup-Risk-Intelligence-AI/
 ├── data/
-│   └── raw/
-│       └── startup_failure_prediction.csv
+│   └── raw/                  # Local data; do not publish without review
 ├── frontend/
 │   ├── assets/
 │   │   └── vitals-monitor-preview.png
 │   ├── index.html
 │   ├── script.js
 │   └── style.css
-├── models/
-│   └── startup_risk_model.pkl
+├── models/                   # Local model artifacts; do not publish without review
 ├── notebooks/
 │   └── 01_eda.ipynb
 └── README.md
@@ -91,13 +95,19 @@ Startup-Risk-Intelligence-AI/
 - Pandas, NumPy, and scikit-learn
 - HTML, CSS, and JavaScript
 - Chart.js for dashboard visualizations
-- Pickle model artifact for the current saved model
 
-## Next Steps
+## Recommended Development Order
 
-1. Build the FastAPI `/predict` endpoint.
-2. Define and validate the model input schema.
-3. Connect `frontend/script.js` to the API.
-4. Evaluate model performance on a held-out dataset.
-5. Add model explainability and deployment configuration.
+1. Verify the dataset schema, labels, and class balance.
+2. Create a reproducible preprocessing and training pipeline.
+3. Evaluate the model on held-out data.
+4. Add input validation and a FastAPI `/predict` endpoint.
+5. Connect the dashboard to the API.
+6. Add tests, explainability, and deployment configuration.
 
+## Security Notes
+
+- Do not commit raw datasets, model binaries, credentials, tokens, or `.env` files.
+- Review `git status` and `git diff` before every commit.
+- Keep sensitive data outside public repositories.
+- Do not claim model accuracy until evaluation has been completed on held-out data.
